@@ -69,7 +69,7 @@ export default function AdjacencyMatrixVisualizer() {
     let totalConnections = 0;
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
-        if (matrix[i] && matrix[i][j] === 1) {
+        if (matrix[i] && matrix[i][j] > 0) {
           totalConnections++;
         }
       }
@@ -204,7 +204,8 @@ export default function AdjacencyMatrixVisualizer() {
                 {/* Matrix cells */}
                 {displayIndices.map((colIdx, displayColIdx) => {
                   const colAirport = displayAirports[displayColIdx];
-                  const hasConnection = matrix[rowIdx] && matrix[rowIdx][colIdx] === 1;
+                  const cellValue = matrix[rowIdx] && matrix[rowIdx][colIdx] ? matrix[rowIdx][colIdx] : 0;
+                  const hasConnection = cellValue > 0;
                   const isHovered =
                     hoveredCell?.row === rowIdx && hoveredCell?.col === colIdx;
                   const isSameCell = rowIdx === colIdx;
@@ -221,11 +222,11 @@ export default function AdjacencyMatrixVisualizer() {
                         isSameCell
                           ? `${rowAirport} → ${rowAirport} (self-loop)`
                           : hasConnection
-                          ? `${rowAirport} → ${colAirport} (flight exists)`
+                          ? `${rowAirport} → ${colAirport}: $${cellValue.toFixed(0)}`
                           : `${rowAirport} → ${colAirport} (no flight)`
                       }
                     >
-                      {hasConnection ? "1" : "0"}
+                      {hasConnection ? `$${cellValue.toFixed(0)}` : "-"}
                     </div>
                   );
                 })}
@@ -239,11 +240,11 @@ export default function AdjacencyMatrixVisualizer() {
       <div className="adj-matrix-legend">
         <div className="legend-item">
           <div className="legend-color has-connection"></div>
-          <span>Connection exists (1)</span>
+          <span>Price shown</span>
         </div>
         <div className="legend-item">
           <div className="legend-color"></div>
-          <span>No connection (0)</span>
+          <span>No connection (-)</span>
         </div>
         <div className="legend-item">
           <div className="legend-color diagonal"></div>
@@ -254,7 +255,7 @@ export default function AdjacencyMatrixVisualizer() {
       {/* DSA Explanation Footer */}
       <div className="adj-matrix-explanation">
         <p>
-          <strong>Adjacency Matrix:</strong> 2D grid where matrix[i][j] = 1 if flight exists from airport i to j. 
+          <strong>Adjacency Matrix:</strong> 2D grid where matrix[i][j] = price (weight) if flight exists from airport i to j, 0 otherwise. Shows cheapest price if multiple flights exist. 
           Space: O(V²), Edge lookup: O(1). Efficient for dense graphs but memory-intensive for sparse networks.
         </p>
       </div>

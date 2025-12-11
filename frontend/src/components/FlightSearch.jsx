@@ -112,8 +112,6 @@ const FlightSearch = () => {
           >
             {loading ? "Searching..." : "Search Flights"}
           </button>
-
-          <button className="btn btn--secondary">View All Flights</button>
         </div>
 
         {error && <div className="error-message">{error}</div>}

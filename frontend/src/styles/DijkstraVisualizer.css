@@ -719,3 +719,408 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: block;
 }
+
+/* ============================================
+   MST VISUALIZER STYLES
+   ============================================ */
+.mst-visualizer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.mst-controls {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.mst-control-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.mst-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.mst-control-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.mst-algorithm-select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mst-algorithm-select:hover {
+  border-color: #3b82f6;
+}
+
+.mst-algorithm-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.mst-simulate-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mst-simulate-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.mst-simulate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mst-error {
+  padding: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+}
+
+.mst-canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.mst-canvas {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mst-playback-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.mst-play-btn,
+.mst-control-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mst-play-btn:hover:not(:disabled),
+.mst-control-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.mst-play-btn:disabled,
+.mst-control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mst-step-info {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.mst-stats {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.mst-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mst-stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mst-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.mst-placeholder {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Dijkstra Graph Visualizer Wrapper Styles */
+.dijkstra-graph-visualizer-wrapper {
+  width: 100%;
+}
+
+.dgv-controls {
+  margin-bottom: 20px;
+}
+
+.dgv-control-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.dgv-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dgv-control-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.dgv-mode-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: #1f2937;
+}
+
+.dgv-simulate-btn {
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dgv-simulate-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.dgv-simulate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dgv-error {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dgv-loading {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dgv-placeholder {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+}
+
+.dgv-placeholder .placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.dgv-placeholder h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.dgv-placeholder p {
+  color: #6b7280;
+  font-size: 14px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Playback Controls - Matching MST style */
+.dgv-playback-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.dgv-control-btn,
+.dgv-play-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dgv-control-btn:hover:not(:disabled),
+.dgv-play-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.dgv-control-btn:disabled,
+.dgv-play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dgv-step-info {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Priority Queue Visualizer Controls - Matching style */
+.pq-playback-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.pq-control-btn,
+.pq-play-btn {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pq-control-btn:hover:not(:disabled),
+.pq-play-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pq-control-btn:disabled,
+.pq-play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pq-step-info {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}

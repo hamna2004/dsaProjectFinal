@@ -3,10 +3,9 @@ import Sidebar from "../components/sidebar";
 import FlightSearch from "../components/FlightSearch";
 import "../styles/dashboard.css";
 import {Link} from "react-router-dom";
-import PakistanFlightTracker from "../components/PakistanFlightTracker";
+import { fetchDashboardStats } from "../services/api";
 
 export default function HomePage() {
-  const [showTracker, setShowTracker] = useState(false);
   const [stats, setStats] = useState({
     totalFlights: 0,
     activeRoutes: 0,
@@ -14,12 +13,15 @@ export default function HomePage() {
   });
 
   useEffect(() => {
+    const loadStats = async () => {
+      const data = await fetchDashboardStats();
     const target = {
-      totalFlights: 8520,
-      activeRoutes: 1212,
-      averagePrice: 420,
+        totalFlights: data.totalFlights || 0,
+        activeRoutes: data.activeRoutes || 0,
+        averagePrice: data.averagePrice || 0,
     };
 
+      // Animate from 0 to target values
     const duration = 1200;
     const frameRate = 1000 / 60;
     const steps = Math.round(duration / frameRate);
@@ -37,8 +39,9 @@ export default function HomePage() {
 
       if (progress === 1) clearInterval(interval);
     }, frameRate);
+    };
 
-    return () => clearInterval(interval);
+    loadStats();
   }, []);
 
   return (
@@ -61,20 +64,8 @@ export default function HomePage() {
 
               <div className="hero-actions">
          <Link to="/planner">
-  <button className="btn btn--primary">Start Planning</button>
+                  <button className="btn btn--primary btn--hero-large">Start Planning</button>
 </Link>
-
-                <button className="btn btn--secondary" onClick={() => setShowTracker(true)}>
-                  Flight Tracker
-                </button>
-              </div>
-
-              <div className="hero-cta">
-                <div>
-                  <p className="cta-label">Live insights</p>
-                  <h4>Monitor airspace in real time.</h4>
-                </div>
-                <button className="btn btn--primary">Launch Console</button>
               </div>
             </div>
 
@@ -123,9 +114,6 @@ export default function HomePage() {
 
         </div>
       </div>
-      {showTracker && (
-        <PakistanFlightTracker onClose={() => setShowTracker(false)} />
-      )}
     </div>
   );
 }

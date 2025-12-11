@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 # Import service functions that handle database operations
-from ..services.flights_service import fetch_all_flights, search_flights
+from ..services.flights_service import fetch_all_flights, search_flights, get_dashboard_stats
 
 # Import function to sync flights from external APIs
 from ..services.flight_api_service import fetch_and_sync_real_time_flights
@@ -93,4 +93,12 @@ def sync_flights():
         }), 400
 
 
+@flights_bp.route("/stats", methods=["GET"])
+def get_stats():
+    """
+    GET /api/flights/stats
+    Returns dashboard statistics: total flights, active routes, and average price.
+    """
+    stats = get_dashboard_stats()
+    return jsonify(stats)
 

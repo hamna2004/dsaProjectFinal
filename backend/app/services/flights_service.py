@@ -142,3 +142,35 @@ def search_flights(source_code: str = None, dest_code: str = None) -> List[Dict]
     
     return result
 
+
+def get_dashboard_stats() -> Dict:
+    """
+    Fetches dashboard statistics: total flights, active routes, and average price.
+    Returns a dictionary with stats.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Total flights
+    cursor.execute("SELECT COUNT(*) as total FROM flights")
+    total_flights = cursor.fetchone()["total"]
+    
+    # Active routes (unique source-destination pairs)
+    cursor.execute("""
+        SELECT COUNT(DISTINCT CONCAT(source_airport, '-', dest_airport)) as routes
+        FROM flights
+    """)
+    active_routes = cursor.fetchone()["routes"]
+    
+    # Average price
+    cursor.execute("SELECT AVG(price) as avg_price FROM flights WHERE price IS NOT NULL")
+    avg_price_result = cursor.fetchone()["avg_price"]
+    average_price = round(float(avg_price_result), 2) if avg_price_result else 0
+    
+    cursor.close()
+    
+    return {
+        "totalFlights": total_flights,
+        "activeRoutes": active_routes,
+        "averagePrice": average_price
+    }

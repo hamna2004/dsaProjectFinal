@@ -220,4 +220,44 @@ export const compareDijkstraPerformance = async ({ source, dest, mode = "cheapes
   }
 };
 
+// =======================
+//  MST ALGORITHMS
+// =======================
+export const simulateMST = async ({ source, dest, algorithm = "prim", max_states = 500 }) => {
+  try {
+    const params = new URLSearchParams({
+      source: source.trim().toUpperCase(),
+      dest: dest.trim().toUpperCase(),
+      algorithm: algorithm.trim().toLowerCase(),
+      max_states: max_states.toString(),
+    });
+
+    const url = `${API_BASE_URL}/api/graph/mst?${params.toString()}`;
+    return await fetchJson(url);
+  } catch (error) {
+    console.error("Error simulating MST:", error);
+    return {
+      success: false,
+      error: error?.message || "MST simulation failed",
+    };
+  }
+};
+
+// =======================
+//  FETCH DASHBOARD STATS
+// =======================
+export const fetchDashboardStats = async () => {
+  try {
+    const url = `${API_BASE_URL}/api/flights/stats`;
+    return await fetchJson(url);
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    return {
+      totalFlights: 0,
+      activeRoutes: 0,
+      averagePrice: 0,
+    };
+  }
+};
+
 

@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import GraphAnalysisSection from "../components/sections/GraphAnalysisSection";
 import DataStructuresSection from "../components/sections/DataStructuresSection";
 import GraphAlgorithmsSection from "../components/sections/GraphAlgorithmsSection";
 import AdvancedAlgorithmsSection from "../components/sections/AdvancedAlgorithmsSection";
 import "../styles/algorithm-lab.css";
 
 export default function AlgorithmLab() {
-  const [activeSection, setActiveSection] = useState("graph-analysis");
+  const [activeSection, setActiveSection] = useState("data-structures");
 
   return (
     <div className="algorithm-lab">
@@ -35,22 +34,16 @@ export default function AlgorithmLab() {
       {/* Navigation Tabs */}
       <div className="lab-nav-tabs">
         <button
-          className={`lab-tab ${activeSection === "graph-analysis" ? "active" : ""}`}
-          onClick={() => setActiveSection("graph-analysis")}
-        >
-          📊 Graph Analysis
-        </button>
-        <button
           className={`lab-tab ${activeSection === "data-structures" ? "active" : ""}`}
           onClick={() => setActiveSection("data-structures")}
         >
-          🔧 Data Structures
+          🧭 Dijkstra's Algorithm Visualization
         </button>
         <button
           className={`lab-tab ${activeSection === "graph-algorithms" ? "active" : ""}`}
           onClick={() => setActiveSection("graph-algorithms")}
         >
-          🌳 Graph Algorithms
+          🌲 Minimum Spanning Tree
         </button>
         <button
           className={`lab-tab ${activeSection === "advanced" ? "active" : ""}`}
@@ -62,7 +55,6 @@ export default function AlgorithmLab() {
 
       {/* Content Sections */}
       <div className="lab-content">
-        {activeSection === "graph-analysis" && <GraphAnalysisSection />}
         {activeSection === "data-structures" && <DataStructuresSection />}
         {activeSection === "graph-algorithms" && <GraphAlgorithmsSection />}
         {activeSection === "advanced" && <AdvancedAlgorithmsSection />}

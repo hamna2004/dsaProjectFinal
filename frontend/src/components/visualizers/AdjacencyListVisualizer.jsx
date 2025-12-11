@@ -238,14 +238,6 @@ export default function AdjacencyListVisualizer() {
         )}
       </div>
 
-      {/* DSA Explanation Footer */}
-      <div className="adj-list-explanation">
-        <p>
-          <strong>Adjacency List:</strong> Each airport maps to a list of its outgoing flights. 
-          This is the data structure used by Dijkstra's and A* algorithms. 
-          Space: O(V + E), Time to check neighbors: O(degree(v)).
-        </p>
-      </div>
     </div>
   );
 }

@@ -17,11 +17,18 @@ export default function DijkstraVisualizer({
   optimization = "cheapest",
   autoplay = true,
   route = null,
+  currentStep: externalCurrentStep = null,
+  setCurrentStep: externalSetCurrentStep = null,
 }) {
   const canvasRef = useRef(null);
-  const [frame, setFrame] = useState(0);
+  const [internalStep, setInternalStep] = useState(0);
   const [playing, setPlaying] = useState(autoplay);
   const [speed, setSpeed] = useState(500); // ms per frame (lower = faster)
+  
+  // Use external step control if provided, otherwise use internal
+  const currentStep = externalCurrentStep !== null ? externalCurrentStep : internalStep;
+  const setCurrentStep = externalSetCurrentStep || setInternalStep;
+  const frame = currentStep;
 
   // Determine what unit to show based on optimization mode
   const getCostLabel = (mode) => {
@@ -187,14 +194,17 @@ export default function DijkstraVisualizer({
   }, [states, graph, source, finalPath]);
 
   useEffect(() => {
-    setFrame(0);
-  }, [mergedStates]);
+    if (externalCurrentStep === null) {
+      setCurrentStep(0);
+    }
+  }, [mergedStates, externalCurrentStep]);
 
-  // Animation interval
+  // Animation interval (only if using internal step control)
   useEffect(() => {
+    if (externalCurrentStep !== null) return; // External control, don't auto-advance
     if (!playing || mergedStates.length <= 1) return;
     const id = setInterval(() => {
-      setFrame((f) => {
+      setCurrentStep((f) => {
         const next = f + 1;
         if (next >= mergedStates.length) {
           setPlaying(false);
@@ -204,11 +214,11 @@ export default function DijkstraVisualizer({
       });
     }, Math.max(50, speed));
     return () => clearInterval(id);
-  }, [playing, speed, mergedStates]);
+  }, [playing, speed, mergedStates, externalCurrentStep]);
 
   // Draw current state
   useEffect(() => {
-    const s = mergedStates[frame];
+    const s = mergedStates[currentStep];
     const canvas = canvasRef.current;
     if (!canvas || !s) return;
     const ctx = canvas.getContext("2d");
@@ -370,13 +380,13 @@ export default function DijkstraVisualizer({
         ctx.stroke();
       }
     }
-  }, [frame, mergedStates, source, finalPath]);
+  }, [currentStep, mergedStates, source, finalPath]);
 
-  const curState = mergedStates[frame] || {};
+  const curState = mergedStates[currentStep] || {};
   const totalSteps = mergedStates.length;
-  const progress = totalSteps > 0 ? ((frame + 1) / totalSteps) * 100 : 0;
-  // Check if complete: at last frame and we have a route (either from prop or last state)
-  const isComplete = frame === totalSteps - 1 && (route || curState.route);
+  const progress = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
+  // Check if complete: at last step and we have a route (either from prop or last state)
+  const isComplete = currentStep === totalSteps - 1 && (route || curState.route);
 
   // Get mode display name
   const modeDisplay = {
@@ -433,13 +443,14 @@ export default function DijkstraVisualizer({
             )}
           </div>
 
-          {/* CONTROLS BELOW CANVAS */}
+          {/* Controls are now in the wrapper component (DijkstraGraphVisualizer) */}
+          {externalCurrentStep === null && (
           <div className="dv-controls">
             <div className="dv-buttons">
               <button
-                onClick={() => { setPlaying(false); setFrame(f => Math.max(0, f - 1)); }}
+                onClick={() => { setPlaying(false); setCurrentStep(f => Math.max(0, f - 1)); }}
                 className="dv-btn dv-btn-secondary"
-                disabled={frame === 0}
+                disabled={currentStep === 0}
               >
                 ⏮ Step Back
               </button>
@@ -450,7 +461,7 @@ export default function DijkstraVisualizer({
                 {playing ? "⏸ Pause" : "▶ Play"}
               </button>
               <button
-                onClick={() => { setPlaying(false); setFrame(0); }}
+                onClick={() => { setPlaying(false); setCurrentStep(0); }}
                 className="dv-btn dv-btn-secondary"
               >
                 ⏹ Reset
@@ -458,10 +469,10 @@ export default function DijkstraVisualizer({
               <button
                 onClick={() => {
                   setPlaying(false);
-                  setFrame(totalSteps > 0 ? totalSteps - 1 : 0);
+                  setCurrentStep(totalSteps > 0 ? totalSteps - 1 : 0);
                 }}
                 className="dv-btn dv-btn-secondary"
-                disabled={frame === totalSteps - 1}
+                disabled={currentStep === totalSteps - 1}
               >
                 ⏭ Jump End
               </button>
@@ -492,7 +503,7 @@ export default function DijkstraVisualizer({
             {/* STEP COUNTER & PROGRESS */}
             <div className="dv-progress-container">
               <div className="dv-step-counter">
-                Step <strong>{frame + 1}</strong> of <strong>{totalSteps}</strong>
+                Step <strong>{currentStep + 1}</strong> of <strong>{totalSteps}</strong>
                 {curState.current && (
                   <span className="dv-current-node">
                     • Processing: <strong>{curState.current}</strong>
@@ -531,6 +542,7 @@ export default function DijkstraVisualizer({
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {/* RIGHT SIDE: Panels */}

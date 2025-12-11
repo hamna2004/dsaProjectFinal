@@ -38,6 +38,48 @@
   letter-spacing: 0.03em;
 }
 
+.navbar__brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  color: #f1f5f9;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.navbar__brand-link:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.navbar__brand-icon {
+  font-size: 1.6rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  animation: float 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.navbar__brand-text {
+  background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 /* Links row */
 .navbar__links {
   display: flex;
@@ -217,6 +259,7 @@
 .hero-actions {
   display:flex;
   gap:15px;
+  margin-top: 8px;
 }
 
 .btn {
@@ -238,6 +281,15 @@
 .btn--primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 24px 40px rgba(244, 188, 59, 0.55);
+}
+
+.btn--hero-large {
+  padding: 20px 48px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
 }
 
 .btn--secondary {

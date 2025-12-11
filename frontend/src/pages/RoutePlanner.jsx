@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchAirports, findRoutes, simulateDijkstra } from "../services/api";
+import { fetchAirports, findRoutes } from "../services/api";
 import RouteMap from "../components/RouteMap";
 import AirportDropdown from "../components/AirportDropDown.jsx";
-
-import DijkstraVisualizer from "../components/DijkstraVisualizer.jsx";
 
 import "../styles/route-planner.css";
 
@@ -19,8 +17,6 @@ export default function RoutePlanner() {
   const [results, setResults] = useState(null);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [error, setError] = useState(null);
-  const [dijkstraStates, setDijkstraStates] = useState([]);
-  const [dijkstraRoute, setDijkstraRoute] = useState(null);
 
   // Load airports once
   useEffect(() => {
@@ -36,54 +32,33 @@ export default function RoutePlanner() {
     setSelectedRoute(null);
     setResults(null);
     setError(null);
-    setDijkstraStates([]);
-    setDijkstraRoute(null);
 
     try {
       const trimmedSource = source.trim();
       const trimmedDest = dest.trim();
       const opt = optimization.trim();
 
-      const [res, sim] = await Promise.all([
-        findRoutes({
+      const res = await findRoutes({
           source: trimmedSource,
           dest: trimmedDest,
           optimization: opt,
           max_stops: Number(maxStops),
-        }),
-        simulateDijkstra({
-          source: trimmedSource,
-          dest: trimmedDest,
-          mode: opt === "all" ? "cheapest" : opt,
-          max_states: 1000,
-        }),
-      ]);
+      });
 
       console.log("API RESPONSE:", res);
 
       if (!res?.success) {
         setError(res?.error || "No route found");
         setResults(null);
-        setDijkstraStates(sim?.states || []);
-        setDijkstraRoute(sim?.route || null);
         return;
       }
 
       setResults(res);
       setError(null);
-      if (sim?.success) {
-        setDijkstraStates(sim.states || []);
-        setDijkstraRoute(sim.route || null);
-      } else {
-        setDijkstraStates([]);
-        setDijkstraRoute(null);
-      }
     } catch (err) {
       console.error("API ERROR:", err);
       setError(err?.message || "Failed to fetch routes");
       setResults(null);
-      setDijkstraStates([]);
-      setDijkstraRoute(null);
     } finally {
       setLoading(false);
     }
@@ -265,28 +240,6 @@ export default function RoutePlanner() {
         </div>
       </div>
 
-      {/* FULL WIDTH VISUALIZER SECTION - OUTSIDE THE GRID */}
-      <div className="rp-visualizer-section">
-        <div className="card rp-dijkstra-card">
-          <div className="rp-card-header">
-            <span className="rp-card-icon" aria-hidden="true">🧭</span>
-            <div style={{ flex: 1 }}>
-              <h3>DIJKSTRA VISUALIZER</h3>
-              <p className="rp-card-label">Pathfinding Engine</p>
-            </div>
-            <Link to="/lab" className="btn btn--secondary" style={{ marginLeft: "auto" }}>
-              🧪 View in Algorithm Lab →
-            </Link>
-          </div>
-          <DijkstraVisualizer
-            states={dijkstraStates}
-            source={source}
-            optimization={optimization}
-            autoplay={false}
-            route={dijkstraRoute}
-          />
-        </div>
-      </div>
     </div>
   );
 }

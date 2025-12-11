@@ -98,31 +98,49 @@ export default function GraphNetworkVisualizer({ source = null, dest = null }) {
       // Highlight route path edges
       const isRoutePath = isInRoutePath(edge.from, edge.to, src, dst, edges);
       
+      // Calculate angle and arrow position
+      const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x);
+      const nodeRadius = 25;
+      const arrowOffset = nodeRadius + 8; // Position arrow before node edge
+      
+      // Calculate where edge should end (before the node)
+      const edgeEndX = toPos.x - arrowOffset * Math.cos(angle);
+      const edgeEndY = toPos.y - arrowOffset * Math.sin(angle);
+      
+      // Draw edge line (stops before node)
       ctx.beginPath();
       ctx.moveTo(fromPos.x, fromPos.y);
-      ctx.lineTo(toPos.x, toPos.y);
+      ctx.lineTo(edgeEndX, edgeEndY);
       ctx.strokeStyle = isRoutePath ? "#f4bc3b" : "#cbd5e1";
       ctx.lineWidth = isRoutePath ? 3 : 1.5;
       ctx.setLineDash(isRoutePath ? [] : [5, 5]);
       ctx.stroke();
 
-      // Draw arrowhead
-      const angle = Math.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x);
-      const arrowLength = 10;
-      const arrowAngle = Math.PI / 6;
+      // Draw arrowhead - larger and more visible
+      const arrowLength = 18; // Increased size
+      const arrowWidth = 12; // Width of arrow base
+      const arrowAngle = Math.PI / 5; // Slightly wider angle
+      
       ctx.beginPath();
-      ctx.moveTo(toPos.x, toPos.y);
+      ctx.moveTo(edgeEndX, edgeEndY);
       ctx.lineTo(
-        toPos.x - arrowLength * Math.cos(angle - arrowAngle),
-        toPos.y - arrowLength * Math.sin(angle - arrowAngle)
+        edgeEndX - arrowLength * Math.cos(angle - arrowAngle),
+        edgeEndY - arrowLength * Math.sin(angle - arrowAngle)
       );
       ctx.lineTo(
-        toPos.x - arrowLength * Math.cos(angle + arrowAngle),
-        toPos.y - arrowLength * Math.sin(angle + arrowAngle)
+        edgeEndX - arrowLength * Math.cos(angle + arrowAngle),
+        edgeEndY - arrowLength * Math.sin(angle + arrowAngle)
       );
       ctx.closePath();
-      ctx.fillStyle = isRoutePath ? "#f4bc3b" : "#cbd5e1";
+      
+      // Fill arrow with solid color
+      ctx.fillStyle = isRoutePath ? "#f4bc3b" : "#64748b"; // Darker gray for visibility
       ctx.fill();
+      
+      // Add border to arrow for better visibility
+      ctx.strokeStyle = isRoutePath ? "#d97706" : "#475569"; // Darker border
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
       // Draw edge weight (price or duration)
       const midX = (fromPos.x + toPos.x) / 2;
@@ -338,26 +356,6 @@ export default function GraphNetworkVisualizer({ source = null, dest = null }) {
             </div>
           </div>
 
-          <div className="gnv-explanation-section">
-            <h5>🧮 How This Helps Route Planning</h5>
-            <div className="gnv-explanation-content">
-              <p>
-                <strong>Subgraph Analysis:</strong> By visualizing only the relevant airports 
-                and flights, we can:
-              </p>
-              <ul>
-                <li>See all possible path options at a glance</li>
-                <li>Identify direct connections vs. multi-hop routes</li>
-                <li>Understand network density around your route</li>
-                <li>Optimize algorithm search space (fewer nodes to explore)</li>
-              </ul>
-              <p>
-                <strong>DSA Concept:</strong> This demonstrates <strong>graph pruning</strong> - 
-                reducing the search space by focusing on a subgraph instead of the entire network. 
-                This makes pathfinding algorithms like Dijkstra's more efficient.
-              </p>
-            </div>
-          </div>
 
           {routeAnalysis && (
             <div className="gnv-stats-quick">

@@ -72,6 +72,7 @@ export default function PriorityQueueTreeVisualizer() {
           route: result.route,
         });
         setCurrentStep(0);
+        setIsPlaying(true); // Auto-start visualization
       } else {
         setError(result.error || "No path found or simulation failed");
       }
@@ -314,42 +315,46 @@ export default function PriorityQueueTreeVisualizer() {
         {simulationData && (
           <div className="pq-playback-controls">
             <button
-              onClick={() => setCurrentStep(0)}
-              disabled={currentStep === 0}
-              className="pq-control-btn"
-            >
-              ⏮ First
-            </button>
-            <button
-              onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-              disabled={currentStep === 0}
-              className="pq-control-btn"
-            >
-              ⏪ Prev
-            </button>
-            <button
               onClick={() => setIsPlaying(!isPlaying)}
               className="pq-control-btn pq-play-btn"
             >
               {isPlaying ? "⏸ Pause" : "▶ Play"}
             </button>
             <button
-              onClick={() => setCurrentStep((prev) => Math.min(simulationData.states.length - 1, prev + 1))}
-              disabled={currentStep >= simulationData.states.length - 1}
+              onClick={() => setCurrentStep(0)}
               className="pq-control-btn"
+              disabled={currentStep === 0}
+            >
+              ⏮ First
+            </button>
+            <button
+              onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
+              className="pq-control-btn"
+              disabled={currentStep === 0}
+            >
+              ⏪ Prev
+            </button>
+            <span className="pq-step-info">
+              Step {currentStep + 1} / {simulationData.states.length}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentStep((prev) =>
+                  Math.min(simulationData.states.length - 1, prev + 1)
+                )
+              }
+              className="pq-control-btn"
+              disabled={currentStep >= simulationData.states.length - 1}
             >
               Next ⏩
             </button>
             <button
               onClick={() => setCurrentStep(simulationData.states.length - 1)}
-              disabled={currentStep >= simulationData.states.length - 1}
               className="pq-control-btn"
+              disabled={currentStep >= simulationData.states.length - 1}
             >
               Last ⏭
             </button>
-            <div className="pq-step-info">
-              Step {currentStep + 1} / {simulationData.states.length}
-            </div>
           </div>
         )}
       </div>
