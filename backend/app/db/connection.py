@@ -2,10 +2,6 @@ import mysql.connector
 from flask import current_app, g
 
 def get_db_connection():
-    """
-    Opens a MySQL connection and stores it on Flask's `g` object for reuse
-    within the same request context.
-    """
     if "db_conn" not in g:
         g.db_conn = mysql.connector.connect(
             host=current_app.config["MYSQL_HOST"],
@@ -17,9 +13,6 @@ def get_db_connection():
 
 
 def close_db_connection(e=None):
-    """
-    Closes the MySQL connection at the end of the request.
-    """
     conn = g.pop("db_conn", None)
     if conn is not None:
         conn.close()

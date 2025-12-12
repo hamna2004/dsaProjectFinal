@@ -6,33 +6,15 @@ from ..db.connection import get_db_connection
 import heapq
 import time
 
-# ---------------------------------------------------------
-# GET GRAPH STATISTICS
-# ---------------------------------------------------------
 def get_graph_stats():
-    """
-    Returns:
-    {
-        "vertices": int,      # number of airports
-        "edges": int,         # number of flights
-        "density": float,     # edge density (0-1)
-        "avg_degree": float,  # average degree per vertex
-        "max_degree": int,    # maximum degree
-        "min_degree": int     # minimum degree
-    }
-    """
     cur = g.db_conn.cursor(dictionary=True)
     
-    # Get all airports
     cur.execute("SELECT COUNT(*) as count FROM airports")
     vertices = cur.fetchone()["count"]
     
-    # Get all flights
     cur.execute("SELECT COUNT(*) as count FROM flights")
     edges = cur.fetchone()["count"]
     
-    # Calculate density: E / (V * (V - 1)) for directed graph
-    # For undirected it would be E / (V * (V - 1) / 2)
     max_possible_edges = vertices * (vertices - 1) if vertices > 1 else 0
     density = edges / max_possible_edges if max_possible_edges > 0 else 0.0
     
@@ -67,7 +49,6 @@ def get_graph_stats():
         code = row["dest_code"].strip().upper()
         in_degrees[code] = row["in_degree"]
     
-    # Combine degrees (total = in + out)
     all_degrees = []
     all_airports = set(list(out_degrees.keys()) + list(in_degrees.keys()))
     
@@ -90,25 +71,9 @@ def get_graph_stats():
         "in_degrees": in_degrees
     }
 
-# ---------------------------------------------------------
-# GET ADJACENCY LIST
-# ---------------------------------------------------------
 def get_adjacency_list():
-    """
-    Returns graph as adjacency list:
-    {
-        "LHE": [
-            {"to": "DXB", "flight_no": "PK201", "price": 100.0, "duration": 180},
-            ...
-        ],
-        ...
-    }
-    Note: Includes all airports that are part of the flight network (source or destination).
-    Airports with no outgoing flights will have an empty list.
-    """
     cur = g.db_conn.cursor(dictionary=True)
     
-    # First, get all airports that are part of the flight network (source or destination)
     cur.execute("""
         SELECT DISTINCT code 
         FROM airports 
@@ -121,10 +86,7 @@ def get_adjacency_list():
     """)
     all_airports_in_network = {row["code"].strip().upper() for row in cur.fetchall()}
     
-    # Initialize adjacency list for all airports in network (even if no outgoing flights)
     adjacency_list = {code: [] for code in all_airports_in_network}
-    
-    # Now get all flights
     cur.execute("""
         SELECT 
             sa.code AS `from`,
@@ -143,14 +105,12 @@ def get_adjacency_list():
         from_code = row["from"].strip().upper()
         to_code = row["to"].strip().upper()
         
-        # Convert duration to minutes if it's a timedelta
         duration = row["duration"]
         if hasattr(duration, 'total_seconds'):
             duration_min = int(duration.total_seconds() / 60)
         else:
             duration_min = int(duration) if duration else 0
         
-        # Only add if source airport is in our network set
         if from_code in adjacency_list:
             adjacency_list[from_code].append({
                 "to": to_code,
@@ -161,32 +121,16 @@ def get_adjacency_list():
     
     return adjacency_list
 
-# ---------------------------------------------------------
-# GET ADJACENCY MATRIX
-# ---------------------------------------------------------
 def get_adjacency_matrix():
-    """
-    Returns adjacency matrix representation:
-    {
-        "airports": ["LHE", "DXB", ...],  # sorted list
-        "matrix": [[0, 1, 0], [1, 0, 1], ...]  # 2D array
-    }
-    """
     cur = g.db_conn.cursor(dictionary=True)
     
-    # Get all airport codes
     cur.execute("SELECT code FROM airports ORDER BY code")
     airports = [row["code"].strip().upper() for row in cur.fetchall()]
     
-    # Create mapping: code -> index
     code_to_index = {code: idx for idx, code in enumerate(airports)}
     
-    # Initialize matrix with zeros (0 means no connection)
     n = len(airports)
     matrix = [[0 for _ in range(n)] for _ in range(n)]
-    
-    # Fill matrix with flight prices (weighted graph)
-    # If multiple flights exist between same airports, store the cheapest price
     cur.execute("""
         SELECT 
             sa.code AS `from`,
@@ -208,25 +152,14 @@ def get_adjacency_matrix():
         if from_code in code_to_index and to_code in code_to_index:
             i = code_to_index[from_code]
             j = code_to_index[to_code]
-            matrix[i][j] = price  # Store price (weight) instead of 1
+            matrix[i][j] = price
     
     return {
         "airports": airports,
         "matrix": matrix
     }
 
-# ---------------------------------------------------------
-# GET CONNECTED COMPONENTS (BFS)
-# ---------------------------------------------------------
 def get_connected_components():
-    """
-    Returns list of connected components using BFS:
-    [
-        {"component_id": 0, "airports": ["LHE", "DXB", ...], "size": 5},
-        ...
-    ]
-    """
-    # Build graph from flights
     cur = g.db_conn.cursor(dictionary=True)
     
     cur.execute("""
@@ -239,7 +172,6 @@ def get_connected_components():
         WHERE sa.code IS NOT NULL AND da.code IS NOT NULL
     """)
     
-    # Build adjacency list (undirected for connectivity)
     graph = defaultdict(set)
     all_airports = set()
     
@@ -248,18 +180,15 @@ def get_connected_components():
         to_code = row["to"].strip().upper()
         all_airports.add(from_code)
         all_airports.add(to_code)
-        # Undirected: add both directions
         graph[from_code].add(to_code)
         graph[to_code].add(from_code)
     
-    # BFS to find connected components
     visited = set()
     components = []
     component_id = 0
     
     for airport in all_airports:
         if airport not in visited:
-            # Start BFS from this airport
             component_airports = []
             queue = deque([airport])
             visited.add(airport)
@@ -282,50 +211,11 @@ def get_connected_components():
     
     return components
 
-# ---------------------------------------------------------
-# GET ROUTE-SPECIFIC GRAPH ANALYSIS
-# ---------------------------------------------------------
 def get_route_graph_analysis(source, dest, max_hops=3):
-    """
-    Returns graph analysis for a specific route:
-    - Subgraph of airports/flights involved in route finding
-    - Path statistics
-    - Alternative connections
-    - Network context
-    
-    Args:
-        source: source airport code
-        dest: destination airport code
-        max_hops: maximum hops to consider for subgraph
-    
-    Returns:
-    {
-        "source": "LHE",
-        "dest": "JFK",
-        "subgraph": {
-            "airports": ["LHE", "DXB", "IST", "JFK"],
-            "edges": [...],
-            "vertices_count": 4,
-            "edges_count": 5
-        },
-        "path_stats": {
-            "direct_flights": 0,
-            "one_stop_options": 2,
-            "two_stop_options": 1
-        },
-        "network_context": {
-            "source_degree": 5,
-            "dest_degree": 8,
-            "is_connected": true
-        }
-    }
-    """
     cur = g.db_conn.cursor(dictionary=True)
     
     source = source.strip().upper()
     dest = dest.strip().upper()
-    
-    # Build full graph
     cur.execute("""
         SELECT 
             sa.code AS `from`,
@@ -357,9 +247,8 @@ def get_route_graph_analysis(source, dest, max_hops=3):
             "duration": int(row["duration"]) if row["duration"] else 0
         })
     
-    # BFS to find subgraph (airports within max_hops from source)
     subgraph_airports = set([source])
-    queue = deque([(source, 0)])  # (airport, hops)
+    queue = deque([(source, 0)])
     visited = {source}
     
     while queue:
@@ -374,10 +263,7 @@ def get_route_graph_analysis(source, dest, max_hops=3):
                 subgraph_airports.add(neighbor)
                 queue.append((neighbor, hops + 1))
     
-    # Also include destination if not already included
     subgraph_airports.add(dest)
-    
-    # Build subgraph edges
     subgraph_edges = []
     for airport in subgraph_airports:
         if airport in graph:
@@ -391,10 +277,7 @@ def get_route_graph_analysis(source, dest, max_hops=3):
                         "duration": edge["duration"]
                     })
     
-    # Calculate path statistics
     direct_flights = len([e for e in subgraph_edges if e["from"] == source and e["to"] == dest])
-    
-    # Count one-stop options (source -> X -> dest)
     one_stop = 0
     for edge1 in subgraph_edges:
         if edge1["from"] == source:
@@ -403,7 +286,6 @@ def get_route_graph_analysis(source, dest, max_hops=3):
                     one_stop += 1
                     break
     
-    # Count two-stop options (source -> X -> Y -> dest)
     two_stop = 0
     for edge1 in subgraph_edges:
         if edge1["from"] == source:
@@ -414,11 +296,8 @@ def get_route_graph_analysis(source, dest, max_hops=3):
                             two_stop += 1
                             break
     
-    # Network context
     source_degree = len(graph.get(source, []))
     dest_degree = len([e for e in subgraph_edges if e["to"] == dest])
-    
-    # Check connectivity (can we reach dest from source?)
     is_connected = dest in subgraph_airports or dest in visited
     
     return {
@@ -444,18 +323,9 @@ def get_route_graph_analysis(source, dest, max_hops=3):
         }
     }
 
-# ---------------------------------------------------------
-# BUILD UNDIRECTED GRAPH FOR MST (from flights)
-# ---------------------------------------------------------
 def build_undirected_graph_for_mst(source=None, dest=None):
-    """
-    Builds an undirected graph from flights for MST algorithms.
-    If source and dest are provided, builds subgraph between them.
-    Returns: (graph_dict, edge_list, airports_set)
-    """
     cur = g.db_conn.cursor(dictionary=True)
     
-    # Build subgraph if source/dest provided
     if source and dest:
         source = source.strip().upper()
         dest = dest.strip().upper()
@@ -562,20 +432,11 @@ def build_undirected_graph_for_mst(source=None, dest=None):
         
         subgraph_airports = all_airports
     
-    # Sort edge list by weight
     edge_list.sort(key=lambda x: x[0])
     
     return graph, edge_list, subgraph_airports
 
-# ---------------------------------------------------------
-# PRIM'S ALGORITHM WITH STEP-BY-STEP TRACING
-# ---------------------------------------------------------
 def prim_mst_simulate(source, dest, max_states=500):
-    """
-    Prim's algorithm to find MST with step-by-step tracing.
-    Finds MST of subgraph between source and dest.
-    Returns: {"mst_edges": [...], "states": [...]}
-    """
     graph, edge_list, airports = build_undirected_graph_for_mst(source, dest)
     
     if source not in airports or dest not in airports:
@@ -588,26 +449,21 @@ def prim_mst_simulate(source, dest, max_states=500):
     states = []
     step = 0
     
-    # Prim's algorithm
     mst_edges = []
     visited = set()
-    pq = []  # (weight, from, to, flight_info)
+    pq = []
     
-    # Start with source
     visited.add(source)
     
-    # Add all edges from source to priority queue
     for neighbor, weight, flight_info in graph.get(source, []):
         heapq.heappush(pq, (weight, source, neighbor, flight_info))
-    
-    # Initial state
     states.append({
         "step": step,
         "time_ms": (time.perf_counter() - start_ts) * 1000,
         "current_node": source,
         "visited": list(visited),
         "mst_edges": list(mst_edges),
-        "pq": [(w, f, t) for w, f, t, _ in pq[:10]],  # Show first 10
+        "pq": [(w, f, t) for w, f, t, _ in pq[:10]],
         "action": "start"
     })
     step += 1
@@ -618,7 +474,6 @@ def prim_mst_simulate(source, dest, max_states=500):
             
         weight, from_node, to_node, flight_info = heapq.heappop(pq)
         
-        # Skip if both nodes already visited
         if to_node in visited:
             states.append({
                 "step": step,
@@ -633,9 +488,7 @@ def prim_mst_simulate(source, dest, max_states=500):
             step += 1
             continue
         
-        # Add edge to MST (store in canonical form: sorted order for undirected graph)
         visited.add(to_node)
-        # Store edge in sorted order to ensure consistency (undirected)
         edge_nodes = sorted([from_node, to_node])
         mst_edges.append({
             "from": edge_nodes[0],
@@ -644,7 +497,6 @@ def prim_mst_simulate(source, dest, max_states=500):
             "flight_info": flight_info
         })
         
-        # Add new edges from to_node
         for neighbor, n_weight, n_flight_info in graph.get(to_node, []):
             if neighbor not in visited:
                 heapq.heappush(pq, (n_weight, to_node, neighbor, n_flight_info))
@@ -661,15 +513,9 @@ def prim_mst_simulate(source, dest, max_states=500):
         })
         step += 1
     
-    # Verify MST correctness: should have V-1 edges for V vertices
     expected_edges = len(airports) - 1
     actual_edges = len(mst_edges)
-    
-    # Final state
     total_cost = sum(e["weight"] for e in mst_edges)
-    
-    # Verify MST is actually minimum (check if we can find a cheaper spanning tree)
-    # This is a sanity check - in a correct implementation, this should always pass
     mst_valid = actual_edges == expected_edges
     
     states.append({
@@ -688,9 +534,6 @@ def prim_mst_simulate(source, dest, max_states=500):
     
     return {"mst_edges": mst_edges, "states": states, "airports": list(airports)}
 
-# ---------------------------------------------------------
-# KRUSKAL'S ALGORITHM WITH STEP-BY-STEP TRACING
-# ---------------------------------------------------------
 class UnionFind:
     def __init__(self, nodes):
         self.parent = {node: node for node in nodes}
@@ -698,7 +541,7 @@ class UnionFind:
     
     def find(self, x):
         if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])  # Path compression
+            self.parent[x] = self.find(self.parent[x])
         return self.parent[x]
     
     def union(self, x, y):
@@ -706,9 +549,8 @@ class UnionFind:
         root_y = self.find(y)
         
         if root_x == root_y:
-            return False  # Already in same set
+            return False
         
-        # Union by rank
         if self.rank[root_x] < self.rank[root_y]:
             self.parent[root_x] = root_y
         elif self.rank[root_x] > self.rank[root_y]:
@@ -717,7 +559,7 @@ class UnionFind:
             self.parent[root_y] = root_x
             self.rank[root_x] += 1
         
-        return True  # Successfully merged
+        return True
 
 def kruskal_mst_simulate(source, dest, max_states=500):
     """
@@ -737,17 +579,14 @@ def kruskal_mst_simulate(source, dest, max_states=500):
     states = []
     step = 0
     
-    # Kruskal's algorithm
     mst_edges = []
     uf = UnionFind(airports)
-    
-    # Initial state
     states.append({
         "step": step,
         "time_ms": (time.perf_counter() - start_ts) * 1000,
         "current_edge": None,
         "mst_edges": list(mst_edges),
-        "edge_list": [(w, f, t) for w, f, t, _ in edge_list[:20]],  # Show first 20
+        "edge_list": [(w, f, t) for w, f, t, _ in edge_list[:20]],
         "action": "start"
     })
     step += 1
