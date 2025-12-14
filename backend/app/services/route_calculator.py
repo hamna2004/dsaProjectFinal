@@ -252,7 +252,7 @@ def build_graph():
 # ---------------------------------------------------------
 def dijkstra_generic(source, dest, weight_fn):
     """
-    weight_fn(flight) -> numeric weight for that edge
+    weight_fn(flight) -> numeric weight for that edge ( price or distance )
     Returns route object (build_route) or None
     """
     graph = build_graph()
@@ -286,6 +286,8 @@ def dijkstra_generic(source, dest, weight_fn):
             path.reverse()
             return build_route(path, coords)
 
+        #each node may have multiple outgoing flights
+        #so we pick the best one
         for f in graph.get(node, []):
             # Handle both "from"/"to" and "source_airport"/"dest_airport" formats
             nxt = f.get("to") or (f.get("dest_airport") if isinstance(f.get("dest_airport"), str) else None)
@@ -322,6 +324,13 @@ def a_star_shortest(source, dest):
     if source not in coords or dest not in coords:
         return None
 
+    """
+    A* uses f = g + h, where:
+    g = distance from source to current node
+    h = heuristic (estimated distance to destination)
+    Initially, g = 0, h = haversine distance from source to dest
+    pq → min-heap storing (f_score, node)
+    """
     g_score = {source: 0.0}
     came_from = {}
     flight_used = {}
@@ -355,8 +364,10 @@ def a_star_shortest(source, dest):
 
             # step distance current -> nxt
             step = haversine(coords[current][0], coords[current][1], coords[nxt][0], coords[nxt][1])
+            #tentative_g is distance from source-> neighbour via current node
             tentative_g = g_score.get(current, float('inf')) + step
 
+            # if new path i shorter than previously known, only then we update g
             if tentative_g < g_score.get(nxt, float('inf')):
                 g_score[nxt] = tentative_g
                 came_from[nxt] = current
@@ -1133,7 +1144,10 @@ def dijkstra_array_based(source, dest, weight_fn):
         # Find unvisited node with minimum distance (O(V) operation)
         min_node = None
         min_dist = float('inf')
-        
+
+        #Array-based: scan all unvisited nodes to find the minimum → O(V) per iteration
+        #Heap-based: pop from a min-heap → O(log V) per iteration
+
         for node in unvisited:
             operations["comparisons"] += 1
             if distances[node] < min_dist:

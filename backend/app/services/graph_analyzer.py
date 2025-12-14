@@ -6,6 +6,17 @@ from ..db.connection import get_db_connection
 import heapq
 import time
 
+"""
+Vertices(nodes) -> airports 
+edges -> flights 
+
+directed graphs ( flights go from source to destination 
+weighted graphs (weight could be price or distance)
+
+this file does not do routing, it pulls data from DB , builds graph structures in memory
+runs graph algorithms , returns python dictionaries ( which are later jsonifies in routes btw ) 
+
+"""
 def get_graph_stats():
     cur = g.db_conn.cursor(dictionary=True)
     
@@ -14,7 +25,9 @@ def get_graph_stats():
     
     cur.execute("SELECT COUNT(*) as count FROM flights")
     edges = cur.fetchone()["count"]
-    
+
+    # calculates how connected the graph is (the density)
+    # formula : density = edges / (v*(v-1))
     max_possible_edges = vertices * (vertices - 1) if vertices > 1 else 0
     density = edges / max_possible_edges if max_possible_edges > 0 else 0.0
     
@@ -28,7 +41,11 @@ def get_graph_stats():
         WHERE sa.code IS NOT NULL
         GROUP BY sa.code
     """)
-    
+
+    #out degrees - flights LEAVING an airport
+    # so they are grouped by the source airport
+    # GROUP BY SOURCE AIRPORT
+
     out_degrees = {}
     for row in cur.fetchall():
         code = row["source_code"].strip().upper()
@@ -43,7 +60,9 @@ def get_graph_stats():
         WHERE da.code IS NOT NULL
         GROUP BY da.code
     """)
-    
+
+    # in degree - flights ARRIVING at the airport
+    # so they are grouped by the destination airport
     in_degrees = {}
     for row in cur.fetchall():
         code = row["dest_code"].strip().upper()
@@ -71,9 +90,23 @@ def get_graph_stats():
         "in_degrees": in_degrees
     }
 
+"""
+this is how adjacency lists are being stored 
+{
+  "LHR": [
+    { "to": "JFK", "price": 500, "duration": 420 },
+    { "to": "DXB", "price": 300, "duration": 380 }
+  ],
+  "DXB": [
+    { "to": "SIN", "price": 250, "duration": 480 }
+  ]
+}
+"""
+
 def get_adjacency_list():
     cur = g.db_conn.cursor(dictionary=True)
-    
+
+    # get all airports that appear in any flight, either as a source or destination.
     cur.execute("""
         SELECT DISTINCT code 
         FROM airports 
@@ -84,9 +117,25 @@ def get_adjacency_list():
         )
         ORDER BY code
     """)
+
+    #NOW THIS WILL CREATE A SET LIKE {"LHR", "JFK", "DXB", "SIN"}
     all_airports_in_network = {row["code"].strip().upper() for row in cur.fetchall()}
-    
+
+    """
+    then we initialize empty adjacency list
+    it will look like this 
+    {
+        "LHR": [],
+        "JFK": [],
+        "DXB": [],
+        "SIN": []
+    }
+    """
     adjacency_list = {code: [] for code in all_airports_in_network}
+
+
+    #now this query gives all the flights (and the data related to them
+
     cur.execute("""
         SELECT 
             sa.code AS `from`,
@@ -101,7 +150,7 @@ def get_adjacency_list():
         ORDER BY sa.code, da.code
     """)
     
-    for row in cur.fetchall():
+    for row in cur.fetchall(): #loop one flight at a time
         from_code = row["from"].strip().upper()
         to_code = row["to"].strip().upper()
         
@@ -122,15 +171,30 @@ def get_adjacency_list():
     return adjacency_list
 
 def get_adjacency_matrix():
+    """
+    this gives a directed adjacency matrix
+    zero means no edge
+    memory : o(v^2) SO IT WILL BE VERY EXPENSIVE FOR LARGE GRAPHS
+    """
     cur = g.db_conn.cursor(dictionary=True)
-    
+
+    # get all airports even isolated ones
     cur.execute("SELECT code FROM airports ORDER BY code")
     airports = [row["code"].strip().upper() for row in cur.fetchall()]
-    
+
+    """
+    map airport to index 
+    smth like this 
+    {
+    "DXB": 0,
+    "JFK": 1,
+    "LHR": 2
+    }
+    """
     code_to_index = {code: idx for idx, code in enumerate(airports)}
     
     n = len(airports)
-    matrix = [[0 for _ in range(n)] for _ in range(n)]
+    matrix = [[0 for _ in range(n)] for _ in range(n)] #initialize empty matrix
     cur.execute("""
         SELECT 
             sa.code AS `from`,
@@ -143,7 +207,9 @@ def get_adjacency_matrix():
           AND f.price IS NOT NULL
         GROUP BY sa.code, da.code
     """)
-    
+    #since matrix stores only one flight (even if multiple exist)
+    #we just keep the one that has min price
+
     for row in cur.fetchall():
         from_code = row["from"].strip().upper()
         to_code = row["to"].strip().upper()
@@ -160,6 +226,26 @@ def get_adjacency_matrix():
     }
 
 def get_connected_components():
+    """
+    this ignores direction, just gives which airports are connected to each other at all
+    USES BFS
+
+    returns something like this
+
+    [
+        {
+            "component_id": 0,
+            "airports": ["DXB", "JFK", "LHR"],
+            "size": 3
+        },
+        {
+            "component_id": 1,
+            "airports": ["SIN", "SYD"],
+            "size": 2
+        }
+    ]
+
+    """
     cur = g.db_conn.cursor(dictionary=True)
     
     cur.execute("""
@@ -171,8 +257,9 @@ def get_connected_components():
         LEFT JOIN airports da ON f.dest_airport = da.id
         WHERE sa.code IS NOT NULL AND da.code IS NOT NULL
     """)
-    
-    graph = defaultdict(set)
+
+    #creates a graph with keys -> airport codes and values -> set of neighbouring airports
+    graph = defaultdict(set) #using "set" avoids duplicate neighbours
     all_airports = set()
     
     for row in cur.fetchall():
@@ -180,15 +267,15 @@ def get_connected_components():
         to_code = row["to"].strip().upper()
         all_airports.add(from_code)
         all_airports.add(to_code)
-        graph[from_code].add(to_code)
+        graph[from_code].add(to_code) #adds edges in BOTH directions ( so direction is ignored)
         graph[to_code].add(from_code)
     
-    visited = set()
-    components = []
+    visited = set() # keeps track of airports already explored
+    components = [] # list that will store all connected components
     component_id = 0
     
     for airport in all_airports:
-        if airport not in visited:
+        if airport not in visited: #START BFS
             component_airports = []
             queue = deque([airport])
             visited.add(airport)
@@ -197,7 +284,7 @@ def get_connected_components():
                 current = queue.popleft()
                 component_airports.append(current)
                 
-                for neighbor in graph.get(current, []):
+                for neighbor in graph.get(current, []): #iterates over all airports directly connected to current
                     if neighbor not in visited:
                         visited.add(neighbor)
                         queue.append(neighbor)
@@ -212,6 +299,10 @@ def get_connected_components():
     return components
 
 def get_route_graph_analysis(source, dest, max_hops=3):
+    """
+    builds a directed graph and then extracts a limited subgraph using BFS again
+    computes direct flights, one stop routes, two stop routes and network statistics
+    """
     cur = g.db_conn.cursor(dictionary=True)
     
     source = source.strip().upper()
@@ -247,13 +338,15 @@ def get_route_graph_analysis(source, dest, max_hops=3):
             "duration": int(row["duration"]) if row["duration"] else 0
         })
     
-    subgraph_airports = set([source])
+    subgraph_airports = set([source]) # starts sub graph with only source airport
     queue = deque([(source, 0)])
+    # BFS QUEUE SORTING : (CURRENT AIRPORT, HOPS USED)
+    # to ensure paths longer than max_hops are not expanded
     visited = {source}
     
     while queue:
         current, hops = queue.popleft()
-        if hops >= max_hops:
+        if hops >= max_hops: # Stops expanding paths longer than allowed hops.
             continue
         
         for edge in graph.get(current, []):
@@ -264,11 +357,13 @@ def get_route_graph_analysis(source, dest, max_hops=3):
                 queue.append((neighbor, hops + 1))
     
     subgraph_airports.add(dest)
+
+    #this stores all edges in sub graph
     subgraph_edges = []
-    for airport in subgraph_airports:
-        if airport in graph:
-            for edge in graph[airport]:
-                if edge["to"] in subgraph_airports:
+    for airport in subgraph_airports: #iterates over all airports in sub graph
+        if airport in graph: # checks if it has outgoing flights
+            for edge in graph[airport]: #iterates over them
+                if edge["to"] in subgraph_airports: #if dest also in sub graph
                     subgraph_edges.append({
                         "from": airport,
                         "to": edge["to"],
@@ -325,7 +420,9 @@ def get_route_graph_analysis(source, dest, max_hops=3):
 
 def build_undirected_graph_for_mst(source=None, dest=None):
     cur = g.db_conn.cursor(dictionary=True)
-    
+
+    #if source and dest are given, it builds a limited sub graph not the whole network
+    #builds MST only around source-> reachable airports -> dest
     if source and dest:
         source = source.strip().upper()
         dest = dest.strip().upper()
@@ -380,13 +477,13 @@ def build_undirected_graph_for_mst(source=None, dest=None):
         for airport in subgraph_airports:
             for neighbor, price, flight_info in directed_graph.get(airport, []):
                 if neighbor in subgraph_airports:
-                    edge_key = tuple(sorted([airport, neighbor]))
+                    edge_key = tuple(sorted([airport, neighbor])) # (A->B) and (B->A) same key
                     if edge_key not in edge_prices or price < edge_prices[edge_key][0]:
                         edge_prices[edge_key] = (price, flight_info)
         
         # Now build the graph with minimum prices
         graph = defaultdict(list)
-        edge_list = []
+        edge_list = [] #needed for kruskal
         
         for (airport1, airport2), (min_price, flight_info) in edge_prices.items():
             # Add to both directions (undirected)
@@ -414,7 +511,9 @@ def build_undirected_graph_for_mst(source=None, dest=None):
         edge_list = []
         edge_set = set()
         all_airports = set()
-        
+
+        #we always sort because MST picks minimum edges first
+
         for row in cur.fetchall():
             from_code = row["from"].strip().upper()
             to_code = row["to"].strip().upper()
@@ -431,7 +530,9 @@ def build_undirected_graph_for_mst(source=None, dest=None):
                 edge_list.append((price, from_code, to_code, row))
         
         subgraph_airports = all_airports
-    
+
+    #sort the edges by weight (price)
+    #required by kruskal and also helpful for prims priority queue
     edge_list.sort(key=lambda x: x[0])
     
     return graph, edge_list, subgraph_airports
@@ -535,11 +636,17 @@ def prim_mst_simulate(source, dest, max_states=500):
     return {"mst_edges": mst_edges, "states": states, "airports": list(airports)}
 
 class UnionFind:
+    """
+    this class is used to detect cycles in kruskal's algorithm
+    implements disjoint set union (DSU)
+    """
     def __init__(self, nodes):
+        #Constructor - each node is its own parent and rank is height of tree
         self.parent = {node: node for node in nodes}
         self.rank = {node: 0 for node in nodes}
     
     def find(self, x):
+        #if x is not root, recursively find root and directly attach x to root
         if self.parent[x] != x:
             self.parent[x] = self.find(self.parent[x])
         return self.parent[x]
@@ -547,10 +654,11 @@ class UnionFind:
     def union(self, x, y):
         root_x = self.find(x)
         root_y = self.find(y)
-        
+        #find roots and check if alr connected
         if root_x == root_y:
             return False
-        
+
+        #attach smaller rank tree under larger
         if self.rank[root_x] < self.rank[root_y]:
             self.parent[root_x] = root_y
         elif self.rank[root_x] > self.rank[root_y]:

@@ -1,6 +1,4 @@
 from flask import Blueprint, jsonify, request
-
-
 from ..services.route_calculator import find_optimal_route, find_routes, compare_all_algorithms, find_pareto_optimal_routes;
 from ..db.connection import get_db_connection
 

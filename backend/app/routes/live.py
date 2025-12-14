@@ -7,13 +7,15 @@ from ..db.connection import get_db_connection
 
 live_bp = Blueprint("live", __name__, url_prefix="/api/live")
 
-# Simple in-memory cache (process-local). For production, use Redis.
+# Simple in-memory cache (process-local).
+#to avoid hitting open sky too often
 _CACHE = {
     "data": None,
     "ts": 0,
     "ttl": 20  # seconds; tune this to avoid OpenSky rate limits
 }
 
+#end point returns all live aircraft states
 OPENSKY_URL = "https://opensky-network.org/api/states/all"
 
 

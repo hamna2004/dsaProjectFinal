@@ -8,7 +8,7 @@ def create_app():
 
     app.config["MYSQL_HOST"] = "localhost"
     app.config["MYSQL_USER"] = "root"
-    app.config["MYSQL_PASSWORD"] = "Abababab@2008"
+    app.config["MYSQL_PASSWORD"] = "areejfatima"
     app.config["MYSQL_DB"] = "flight_planner"
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -23,6 +23,7 @@ def create_app():
 
     return app
 
+#A Blueprint is a way to group related routes, logic, and files together in Flask
 def register_blueprints(app: Flask):
     from .routes.flights import flights_bp
     from .routes.airports import airports_bp
