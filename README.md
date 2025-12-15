@@ -202,7 +202,7 @@ npm start
 
 ## Quick Start Summary
 
-1.  Install MySQL and create database
+1.  Install MySQL & create database
 2.  Import `db/seed_flights.sql`
 3.  Update MySQL credentials in `backend/app/__init__.py`
 4.  Create virtual environment: `python -m venv .venv`
