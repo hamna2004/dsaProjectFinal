@@ -1,0 +1,41 @@
+.live-page {
+  padding: 2rem;
+  color: #1e293b;   /* dark text */
+  font-family: Inter, sans-serif;
+}
+
+.live-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.live-header p {
+  color: #64748b;
+  margin: 0;
+}
+.live-map-container {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0px 8px 25px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.live-page {
+  padding: 2rem;
+  color: #1e293b;
+  font-family: Inter, sans-serif;
+}
+.live-map-container {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0px 8px 25px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+.map-title {
+  color: #0f172a;
+  margin-bottom: 12px;
+  font-size: 1.3rem;
+  font-weight: 600;
+}

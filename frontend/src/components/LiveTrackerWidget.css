@@ -1,0 +1,77 @@
+.ltw-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px;
+  color: #1e293b;
+  width: 330px;
+  box-shadow: 0px 8px 25px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+
+.ltw-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.ltw-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.ltw-small {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.ltw-small:hover {
+  background: #eef2ff;
+  border-color: #c3dafe;
+}
+
+.ltw-controls .ltw-small {
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.06);
+  color:#bcd1ff;
+  padding:6px 8px;
+  border-radius:6px;
+  cursor:pointer;
+  margin-left:6px;
+}
+
+.ltw-body { display:grid; gap:10px; }
+.ltw-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+
+.ltw-label {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.ltw-value {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 1rem;
+}
+.ltw-footer {
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-align: right;
+}

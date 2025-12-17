@@ -1,0 +1,368 @@
+/* ================================
+   FLIGHT SEARCH MAIN WRAPPER
+================================ */
+.flight-search {
+  margin-top: 3rem;
+  pointer-events: auto !important; /* ensures clickable */
+}
+
+.search-form {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 22px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 55px rgba(9, 30, 21, 0.12);
+  position: relative;
+  z-index: 10; /* makes sure it's above hero artwork */
+}
+
+/* ================================
+   GRID + FORM FIELDS
+================================ */
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-form__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.search-field--full {
+  grid-column: 1 / -1;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Override rp-field and rp-select styles for dark theme */
+.search-form .rp-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.search-form .rp-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.search-form .rp-select {
+  padding: 0.9rem 1.2rem;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #f8fafc;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.search-form .rp-select:hover {
+  border-color: rgba(76, 110, 245, 0.4);
+  background: rgba(15, 23, 42, 1);
+}
+
+.search-form .rp-select:focus {
+  outline: none;
+  border-color: #f4bc3b;
+  background: rgba(15, 23, 42, 1);
+}
+
+.search-form .rp-select option {
+  background: rgba(15, 23, 42, 1);
+  color: #f8fafc;
+}
+
+.search-select {
+  padding: 0.9rem 1.2rem;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color var(--transition), background var(--transition);
+  cursor: pointer;
+}
+
+.search-select:hover {
+  border-color: rgba(76, 110, 245, 0.4);
+}
+
+.search-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(15, 23, 42, 1);
+}
+
+/* ================================
+   SEARCH MODE BUTTONS
+================================ */
+.search-mode-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 0.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.mode-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, #f4bc3b, #ffa51f);
+  color: white;
+  box-shadow: 0 4px 12px rgba(244, 188, 59, 0.3);
+}
+
+/* ================================
+   ACTION BUTTONS
+================================ */
+.search-form__actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* ================================
+   ERROR MESSAGE
+================================ */
+.error-message {
+  margin-top: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 16px;
+  color: #fca5a5;
+  font-size: 0.95rem;
+}
+
+/* ================================
+   RESULTS TABLE
+================================ */
+.results-box {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.results-title {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.results-table th {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #a5b4fc;
+  text-align: left;
+}
+
+.results-table td {
+  padding: 12px;
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.results-table tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ================================
+   OPTIMAL ROUTE SUMMARY
+================================ */
+.route-summary {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+
+/* ================================
+   PARETO OPTIMAL ROUTES
+================================ */
+.optimal-route-box {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.pareto-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+}
+
+.pareto-header h3 {
+  color: white;
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+}
+
+.pareto-stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  color: #a5b4fc;
+  font-size: 0.95rem;
+}
+
+.pareto-candidates {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.pareto-explanation {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 8px;
+  border-left: 4px solid #4c6ef5;
+}
+
+.pareto-explanation p {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.pareto-explanation strong {
+  color: #a5b4fc;
+}
+
+.pareto-routes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pareto-route-card {
+  padding: 20px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 10px;
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  transition: all 0.3s ease;
+}
+
+.pareto-route-card:hover {
+  border-color: rgba(76, 110, 245, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pareto-route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pareto-route-header h4 {
+  color: white;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.pareto-route-metrics {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.metric-item {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.metric-item strong {
+  color: #a5b4fc;
+  margin-right: 0.5rem;
+}
+
+/* ================================
+   MOBILE RESPONSIVE
+================================ */
+@media (max-width: 640px) {
+  .search-form {
+    padding: 1.75rem;
+  }
+
+  .search-form__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .search-form__actions {
+    flex-direction: column;
+  }
+
+  .search-form__actions .btn {
+    width: 100%;
+  }
+}
+
+/* ================================
+   FIX: HERO ARTWORK OVERLAY BUG
+================================ */
+.hero__artwork {
+  pointer-events: none !important; /* prevents blocking buttons */
+}
+
+.hero__artwork * {
+  pointer-events: none !important;
+}

@@ -1,0 +1,256 @@
+.tracker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.92);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.tracker-shell {
+  width: min(1400px, 96vw);
+  height: 92vh;
+  background: #0f172a;
+  border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(2, 6, 23, 0.75);
+  display: flex;
+  flex-direction: column;
+  color: #e2e8f0;
+}
+
+.tracker-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tracker-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.tracker-header p {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.tracker-close {
+  border: none;
+  background: #f87171;
+  color: #0f172a;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.tracker-close:hover {
+  opacity: 0.85;
+}
+
+.tracker-body {
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+}
+
+.tracker-map {
+  flex: 2;
+  background: #030a1b;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tracker-map__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.tracker-map__error {
+  color: #f87171;
+}
+
+.tracker-map .leaflet-container {
+  height: 100%;
+}
+
+.tracker-sidebar {
+  flex: 1;
+  background: #111c34;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.tracker-label {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.tracker-sidebar input {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+}
+
+.tracker-sidebar input:focus {
+  outline: 2px solid #38bdf8;
+  border-color: transparent;
+}
+
+.tracker-flight-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.tracker-flight {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 12px 14px;
+  color: #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tracker-flight small {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.tracker-flight.is-active {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.tracker-flight + .tracker-flight {
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.tracker-flight--empty {
+  cursor: default;
+  justify-content: center;
+}
+
+.tracker-details {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.tracker-details__heading h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.tracker-details__heading p {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.tracker-details__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tracker-details__grid span {
+  display: block;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tracker-details__grid strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.tracker-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tracker-feature {
+  background: rgba(56, 189, 248, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.tracker-feature span {
+  display: block;
+  font-size: 0.85rem;
+  color: #bae6fd;
+  margin-bottom: 4px;
+}
+
+.tracker-feature strong {
+  font-size: 1rem;
+}
+
+.tracker-plane-icon__glyph {
+  font-size: 1.2rem;
+  line-height: 32px;
+  text-align: center;
+  color: #38bdf8;
+  filter: drop-shadow(0 2px 4px rgba(8, 47, 73, 0.8));
+}
+
+.tracker-plane-icon--active .tracker-plane-icon__glyph {
+  color: #f97316;
+}
+
+@media (max-width: 1200px) {
+  .tracker-body {
+    flex-direction: column;
+  }
+
+  .tracker-map {
+    height: 45vh;
+  }
+
+  .tracker-sidebar {
+    flex: unset;
+  }
+}
+
+
